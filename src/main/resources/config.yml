@@ -1,0 +1,4 @@
+mappings:
+  - file: "plugins/SomePlugin/data.yml"
+    section: "PlayerMaxResidences"
+    permission: "residence.max"

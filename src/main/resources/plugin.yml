@@ -1,0 +1,20 @@
+name: Data2Perms
+version: '$version'
+
+main: tw.origincraft.data2Perms.Main
+api-version: '1.21.8'
+load: POSTWORLD
+
+softdepend:
+  - LuckPerms
+
+commands:
+  data2perms:
+    description: Data2Perms management command
+    usage: /data2perms <sync|reload>
+    permission: data2perms.admin
+
+permissions:
+  data2perms.admin:
+    description: Access to Data2Perms commands
+    default: op
