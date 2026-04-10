@@ -92,7 +92,7 @@ public class CommandManager implements CommandExecutor {
         for (DataManager.MappingEntry entry : entries) {
             for (Map.Entry<UUID, Integer> e : entry.data().entrySet()) {
                 CompletableFuture<Void> future = luckPermsManager
-                        .applyPermission(e.getKey(), entry.permission(), e.getValue())
+                        .applyPermission(e.getKey(), entry.permission(), e.getValue(), entry.contexts(), entry.deleteScope())
                         .thenAccept(ok -> {
                             if (ok) success.incrementAndGet();
                             else failed.incrementAndGet();

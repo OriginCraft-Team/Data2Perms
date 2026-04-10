@@ -1,4 +1,18 @@
 mappings:
+  # Required: file path to source YAML (resolved from server working directory).
   - file: "plugins/SomePlugin/data.yml"
+    # Required: section inside the source YAML containing UUID -> integer entries.
     section: "PlayerMaxResidences"
+    # Required: permission prefix. Example output node: residence.max.36
     permission: "residence.max"
+
+    # Optional: LuckPerms contexts (object format, supports multiple entries).
+    # contexts:
+    #   residence: "yes"
+    #   world: "survival"
+
+    # Optional: node cleanup scope before writing the new node.
+    # - none (default): do not remove old nodes
+    # - same_contexts: remove nodes with same permission prefix and exactly same contexts
+    # - all_prefix: remove all nodes with same permission prefix
+    # delete_scope: "none"
