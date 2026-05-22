@@ -26,6 +26,18 @@ public class DataManager {
      */
     public record MappingEntry(String permission, Map<String, String> contexts, DeleteScope deleteScope, Map<UUID, Integer> data) {}
 
+    public record LoadStats(
+            int loadedEntries,
+            int invalidUuidCount,
+            int nullValueCount,
+            int nonIntegerCount,
+            int nonPositiveCount
+    ) {
+    }
+
+    public record LoadResult(List<MappingEntry> entries, LoadStats stats) {
+    }
+
     private final Main plugin;
 
     /**
@@ -50,10 +62,14 @@ public class DataManager {
      *
      * @return a list of successfully parsed {@link MappingEntry} objects
      */
-    public List<MappingEntry> loadMappings() {
+    public LoadResult loadMappings() {
         Logger log = plugin.getLogger();
         List<Map<?, ?>> mappings = plugin.getConfig().getMapList("mappings");
         List<MappingEntry> results = new ArrayList<>();
+        int invalidUuidCount = 0;
+        int nullValueCount = 0;
+        int nonIntegerCount = 0;
+        int nonPositiveCount = 0;
 
         for (Map<?, ?> mapping : mappings) {
             String filePath = (String) mapping.get("file");
@@ -86,22 +102,26 @@ public class DataManager {
                 try {
                     uuid = UUID.fromString(key);
                 } catch (IllegalArgumentException e) {
+                    invalidUuidCount++;
                     log.warning("Invalid UUID '" + key + "' in section '" + section + "', skipping.");
                     continue;
                 }
 
                 Object rawValue = sec.get(key);
                 if (rawValue == null) {
+                    nullValueCount++;
                     log.warning("UUID " + key + " has null value in section '" + section + "', skipping.");
                     continue;
                 }
 
                 if (!(rawValue instanceof Integer value)) {
+                    nonIntegerCount++;
                     log.warning("UUID " + key + " has non-integer value '" + rawValue + "' in section '" + section + "', skipping.");
                     continue;
                 }
 
                 if (value <= 0) {
+                    nonPositiveCount++;
                     log.warning("UUID " + key + " has invalid value " + value + " (must be > 0) in section '" + section + "', skipping.");
                     continue;
                 }
@@ -113,7 +133,14 @@ public class DataManager {
             log.info("Loaded " + data.size() + " entries from section '" + section + "' in " + filePath);
         }
 
-        return results;
+        LoadStats stats = new LoadStats(
+                results.stream().mapToInt(entry -> entry.data().size()).sum(),
+                invalidUuidCount,
+                nullValueCount,
+                nonIntegerCount,
+                nonPositiveCount
+        );
+        return new LoadResult(results, stats);
     }
 
     private Map<String, String> parseContexts(Object rawContexts, Logger log) {

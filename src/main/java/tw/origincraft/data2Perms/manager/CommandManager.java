@@ -79,7 +79,8 @@ public class CommandManager implements CommandExecutor {
     private void handleSync(CommandSender sender) {
         sender.sendMessage("[Data2Perms] Starting sync...");
 
-        List<DataManager.MappingEntry> entries = dataManager.loadMappings();
+        DataManager.LoadResult loadResult = dataManager.loadMappings();
+        List<DataManager.MappingEntry> entries = loadResult.entries();
         if (entries.isEmpty()) {
             sender.sendMessage("[Data2Perms] No mappings found or all files missing.");
             return;
@@ -102,7 +103,14 @@ public class CommandManager implements CommandExecutor {
         }
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenRun(() ->
-                sender.sendMessage("[Data2Perms] Sync complete. Success: " + success.get() + ", Failed: " + failed.get())
+                sender.sendMessage(
+                        "[Data2Perms] Sync complete. Success: " + success.get()
+                                + ", Failed: " + failed.get()
+                                + ", SourceSkipped(invalid_uuid=" + loadResult.stats().invalidUuidCount()
+                                + ", null_value=" + loadResult.stats().nullValueCount()
+                                + ", non_integer=" + loadResult.stats().nonIntegerCount()
+                                + ", non_positive=" + loadResult.stats().nonPositiveCount() + ")"
+                )
         );
     }
 }
